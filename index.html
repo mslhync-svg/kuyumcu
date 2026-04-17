@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuyumcu Satış Sistemi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-gem">💎</div>
+    <div>
+      Kuyumcu Satış
+      <span class="logo-subtitle">Yönetim Sistemi</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="gf-wrap">
+      <label>GRAM FİYATI</label>
+      <input type="number" id="gram-fiyat-vis" value="3200" step="0.01" oninput="updateFiyat()" style="color:#e8b84b">
+    </div>
+    <span class="tarih-chip" id="tarih-lbl"></span>
+  </div>
+  <input type="hidden" id="gram-fiyat" value="3200">
+</header>
+
+<!-- BANKA ONAY UYARI BANDI -->
+<div id="banka-uyari-bant" onclick="showTab('banka')" title="Tıkla → Banka Hareketleri">
+  <div class="bant-icerik" id="bant-icerik"></div>
+</div>
+
+
+<div class="modal-overlay" id="fis-modal">
+  <div class="modal-box">
+    <div class="fis-area" id="fis-preview"></div>
+    <div class="modal-actions">
+      <button class="dl-btn" onclick="downloadFisPng()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PNG İndir
+      </button>
+      <button class="wp-btn" style="font-size:13px;padding:9px 14px" onclick="wpFisSend()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+        WP'ye At
+      </button>
+      <button onclick="printFis()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;">
+        🖨 Yazdır
+      </button>
+      <button class="m-close" onclick="closeFis()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOTO BÜYÜTME -->
+<div class="foto-modal" id="foto-modal" onclick="closeFotoModal()">
+  <img id="foto-modal-img" src="" alt="Sipariş Fotoğrafı">
+</div>
+
+<div class="app-body">
+  <div class="tabs">
+    <button class="tab" onclick="showTab('musteri')">👤 Müşteri</button>
+    <button class="tab" onclick="showTab('islem')">⚖️ Yeni İşlem</button>
+    <button class="tab" onclick="showTab('islemler')">📋 İşlemler <span class="tab-cnt" id="islem-tab-cnt" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('siparis')">🛍️ Siparişler <span class="tab-cnt" id="sip-cnt" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('banka')">🏦 Banka <span class="tab-cnt" id="bh-cnt" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('gecmis')">📅 Geçmiş</button>
+    <button class="tab" onclick="showTab('rapor')">📊 Rapor</button>
+    <button class="tab" onclick="showTab('borc')">📒 Borç <span class="tab-cnt" id="bd-cnt" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('baglanti')">🔗 Bağlantı <span class="tab-cnt" id="bag-cnt" style="display:none">0</span></button>
+    <button class="tab" onclick="showTab('ayarlar')">⚙️ Ayarlar</button>
+  </div>
+
+  <!-- MÜŞTERİ -->
+  <div id="tab-musteri">
+    <div class="card">
+      <div class="sec-hd">Yeni Müşteri</div>
+      <div class="grid2">
+        <div class="fg"><label>Ad Soyad</label><input type="text" id="m-isim" placeholder="Ad Soyad"></div>
+        <div class="fg"><label>Telefon</label><input type="text" id="m-tel" placeholder="05XX XXX XX XX"></div>
+      </div>
+      <button class="btn btn-p" onclick="addMusteri()">+ Müşteri Ekle</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div class="sec-hd" style="margin:0">Kayıtlı Müşteriler (<span id="m-cnt">0</span>)</div>
+      <input type="text" id="m-ara" placeholder="Müşteri ara..." oninput="renderMusteri()"
+        style="padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-family:var(--font-body);font-size:12px;width:200px;background:var(--surface2);color:var(--text);outline:none">
+    </div>
+    <div id="musteri-list"><div class="empty"><div class="empty-icon">👤</div>Henüz müşteri eklenmedi</div></div>
+  </div>
+
+  <!-- SATIŞ & ALIŞ -->
+  <div id="tab-islem" style="display:none">
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
+
+      <!-- A: MÜŞTERİ + DURUM ──────────────────────────────────── -->
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div class="fg" style="flex:2;min-width:170px;margin:0">
+          <label>Müşteri Adı</label>
+          <input type="text" id="i-musteri" list="m-dl" placeholder="Boş bırakırsan → PEŞİN MÜŞTERİ" autocomplete="off">
+          <datalist id="m-dl"></datalist>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.02em">DURUM</span>
+            <button type="button" onclick="openDurumEditor()" style="font-size:10px;padding:2px 8px;border:1px dashed var(--border2);border-radius:20px;background:transparent;cursor:pointer;color:var(--text3);font-family:var(--font-body)">+ Ekle/Düzenle</button>
+          </div>
+          <div class="status-wrap" id="durum-wrap" style="margin:0"></div>
+        </div>
+      </div>
+
+      <!-- B: SATIR EKLEME PANELİ ──────────────────────────────── -->
+      <div style="padding:14px 16px;background:#faf9f7;border-bottom:1px solid var(--border)">
+
+        <!-- ÜRÜN PANELİ (SATIŞ / ALIŞ) -->
+        <div id="satir-urun-panel">
+
+          <div id="ozel-tus-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+          <!-- Giriş alanları -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fg" style="flex:3;min-width:130px;margin:0">
+              <label>Ürün</label>
+              <input class="str-inp" type="text" id="s-urun" placeholder="Ürün adı...">
+            </div>
+            <div class="fg" id="s-gram-fg" style="flex:1.5;min-width:80px;margin:0">
+              <label>Gram</label>
+              <input class="str-inp" type="text" id="s-gram" placeholder="0,000" inputmode="decimal" oninput="satirGramToTutar()">
+            </div>
+            <div class="fg" id="s-adet-fg" style="flex:1.5;min-width:70px;margin:0;display:none">
+              <label>Adet</label>
+              <input class="str-inp" type="number" id="s-adet" placeholder="1" min="1" value="1">
+            </div>
+            <div class="fg" style="flex:2;min-width:100px;margin:0">
+              <label>Tutar (₺)</label>
+              <input class="str-inp" type="number" id="s-tutar" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <button type="button" onclick="addSatir()" class="btn btn-p" style="padding:9px 18px;align-self:flex-end;white-space:nowrap;font-size:13px">+ Satıra Ekle</button>
+          </div>
+        </div>
+
+        <!-- ÖDEME EKLEMEsi (NAKİT / HAVALE) -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2)">
+          <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+            <span style="font-size:11px;font-weight:600;color:var(--text3)">ÖDEME EKLE:</span>
+            <button type="button" class="qbtn" onclick="formOdemeAc('NAKİT')">🪙 Nakit</button>
+            <button type="button" class="qbtn" onclick="formOdemeAc('HAVALE')">🏦 Havale/EFT</button>
+          </div>
+        </div>
+        <div id="satir-odeme-panel" style="display:none">
+          <!-- Banka hızlı tuşları (sadece HAVALE seçilince görünür) -->
+          <div id="banka-qbtns-wrap" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+            <span style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.04em;align-self:center">BANKA:</span>
+            <div id="banka-qbtns" style="display:contents"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fg" style="flex:2;min-width:120px;margin:0">
+              <label>Tutar (₺)</label>
+              <input class="str-inp" type="number" id="s-odeme-tutar" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="fg" id="s-detay-fg" style="flex:2;min-width:130px;margin:0;display:none">
+              <label>Banka / Açıklama <span style="font-weight:400;color:var(--text3);font-size:10px">(kv → Kuveyt Türk gibi)</span></label>
+              <input class="str-inp" type="text" id="s-detay" placeholder="Kısayol veya banka adı..." list="banka-dl" oninput="bankaKisayolCoz(this)">
+              <datalist id="banka-dl"></datalist>
+            </div>
+            <button type="button" onclick="satirKalanEkle()" class="btn" style="padding:9px 14px;align-self:flex-end;font-size:12px;font-weight:600;color:var(--green);border-color:var(--green);white-space:nowrap">Kalanı Yaz</button>
+            <button type="button" onclick="addSatir()" class="btn btn-p" style="padding:9px 18px;align-self:flex-end;white-space:nowrap;font-size:13px">+ Satıra Ekle</button>
+          </div>
+        </div>
+
+      </div><!-- /B -->
+
+      <!-- C: SATIRLAR TABLOSU ──────────────────────────────────── -->
+      <div style="overflow-x:auto">
+        <table class="str-tbl">
+          <thead>
+            <tr>
+              <th style="width:32px">#</th>
+              <th style="width:100px">TÜR</th>
+              <th>ÜRÜN / AÇIKLAMA</th>
+              <th style="width:110px">GRAM / ADET</th>
+              <th style="width:120px;text-align:right">TUTAR</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="satirlar-tb">
+            <tr><td colspan="6"><div class="empty" style="padding:22px 0"><div class="empty-icon" style="font-size:24px">📋</div>Yukarıdan satır ekleyin<br><span style="font-size:11px;color:var(--text3)">SATIŞ → ALIŞ → NAKİT / HAVALE sırasıyla</span></div></td></tr>
+          </tbody>
+        </table>
+        <!-- Özet + Kalan -->
+        <div id="satirlar-ozet" style="display:none"></div>
+        <div class="kalan-box" id="kalan-box-main" style="display:none;border-radius:0;border-left:none;border-right:none;border-bottom:none;margin:0">
+          <div id="kalan-box-sol">
+            <div class="kalan-lbl" id="kalan-lbl-txt">Kalan</div>
+            <div class="kalan-sub" id="kalan-sub-txt">Satış − Alış − Ödeme</div>
+          </div>
+          <div id="kalan-disp"><span class="kalan-bos">BOŞ</span></div>
+        </div>
+        <!-- BORÇ NOTU -->
+        <div id="gram-borc-wrap" style="display:none;padding:10px 14px;background:#fff0f0;border:1.5px solid #dc2626;border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm)">
+          <div style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">⚠️ BORÇ NOTU — İŞLEMDE YANIP SÖNER</div>
+          <input type="text" id="gram-borc-inp" placeholder="8,03g · 50.830₺ · 2 çeyrek — istediğini yaz..."
+            style="width:100%;padding:9px 12px;border:1.5px solid #dc2626;border-radius:var(--radius-sm);font-size:13px;font-weight:700;color:#dc2626;background:#fff;outline:none;font-family:var(--font-body)">
+          <div style="font-size:10px;color:var(--text3);margin-top:5px">Gram, TL, çeyrek, ata — istediğin gibi yaz. Boş bırakırsan sadece TL kalan görünür.</div>
+        </div>
+      </div><!-- /C -->
+
+      <!-- D: NOT + SİPARİŞ + KAYDET ──────────────────────────── -->
+      <div style="padding:14px 16px;border-top:1px solid var(--border)">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Not</label>
+          <input type="text" id="i-not" placeholder="Opsiyonel...">
+        </div>
+        <!-- SİPARİŞ EXTRA -->
+        <div class="sip-extra" id="sip-extra">
+          <div class="sip-extra-lbl">📋 Sipariş Detayları</div>
+          <div class="grid4">
+            <div class="fg"><label>Bilezik Türü</label>
+              <select id="i-bilezik">
+                <option value="">— Seçin —</option>
+                <option>22 Ayar Bilezik</option><option>18 Ayar Bilezik</option>
+                <option>14 Ayar Bilezik</option><option>925 Gümüş</option>
+                <option>Cumhuriyet Altını</option><option>Yarım Altın</option>
+                <option>Çeyrek Altın</option><option>Özel Sipariş</option>
+              </select>
+            </div>
+            <div class="fg"><label>Adet</label><input type="number" id="i-adet" placeholder="1" min="1" value="1"></div>
+            <div class="fg"><label>Ölçü / Ebat</label><input type="text" id="i-olcu" placeholder="17cm, 52 no..."></div>
+            <div class="fg"><label>Sipariş Notu</label><input type="text" id="i-snot" placeholder="Özel istek..."></div>
+          </div>
+          <div class="fg"><label>Fotoğraf Ekle (çoklu)</label>
+            <input type="file" id="i-foto" accept="image/*" multiple onchange="previewFoto()">
+          </div>
+          <div class="foto-preview-wrap" id="foto-preview-wrap"></div>
+        </div>
+        <!-- WP Gönder -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border2)" id="wp-row">
+          <button class="wp-btn" onclick="wpMusteriGonder()" style="font-size:12px;padding:7px 12px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+            👤 WP Müşteriye
+          </button>
+          <div id="wp-banka-btns" style="display:contents"></div>
+        </div>
+        <!-- Banka Onay Checkbox (Havale varsa otomatik görünür) -->
+        <div id="banka-onay-satir-wrap" style="display:none;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid var(--purple);border-radius:var(--radius-sm)">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="i-banka-onay" style="width:18px;height:18px;accent-color:var(--purple);cursor:pointer;flex-shrink:0">
+            <span style="font-size:13px;font-weight:700;color:var(--purple)">🏦 Banka onaylandı — Havale/EFT onaylı olarak işaretlensin</span>
+          </label>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;margin-left:28px">İşaretlenirse banka hareketi direkt onaylı eklenir, uyarı bandı çıkmaz</div>
+        </div>
+        <!-- Kaydet -->
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="saveIslem(false)">Kaydet</button>
+          <button class="btn btn-g" onclick="saveIslem(true)">🧾 Kaydet + Fiş</button>
+          <button class="btn" onclick="saveIslemVeKendimeWP()" style="background:linear-gradient(135deg,#075e54,#128c7e);color:#fff;border-color:#075e54;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+            Kaydet + Kendime WP
+          </button>
+          <button class="btn btn-clr" onclick="clearForm()">Temizle</button>
+        </div>
+      </div><!-- /D -->
+
+      <!-- Gizli eski ID'ler (geriye dönük uyum) -->
+      <input type="hidden" id="i-urun"><input type="hidden" id="i-gram">
+      <input type="hidden" id="i-tutar"><input type="hidden" id="i-nakit">
+      <input type="hidden" id="i-havale"><input type="hidden" id="i-odeme-detay">
+      <div id="oc-nakit" style="display:none"></div><div id="oc-havale" style="display:none"></div>
+      <div id="nakit-tutar-wrap" style="display:none"></div><div id="havale-tutar-wrap" style="display:none"></div>
+      <div id="nakit-full-btn" style="display:none"></div><div id="havale-full-btn" style="display:none"></div>
+      <div id="odeme-d-wrap" style="display:none"></div><div id="alis-section" style="display:none"></div>
+      <div id="alis-toggle-btn" style="display:none"></div><div id="hizli-alis-wrap" style="display:none"></div>
+      <input type="hidden" id="i-alis-urun"><input type="hidden" id="i-alis-tutar">
+      <input type="hidden" id="i-alis-gram"><input type="hidden" id="i-alis-adet">
+    </div>
+  </div><!-- /tab-islem form sonu -->
+
+  <!-- İŞLEMLER LİSTESİ -->
+  <div id="tab-islemler" style="display:none">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border)">
+        <div class="sec-hd" style="margin:0">İşlem Geçmişi (<span id="islem-cnt">0</span>)</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <!-- NAKİT BAKİYE -->
+          <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer" onclick="nakitBakiyeModal()" title="Nakit kasa yönetimi">
+            <span style="font-size:13px">🪙</span>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Nakit Kasa</div>
+              <div id="nakit-bakiye-lbl" style="font-size:13px;font-weight:700;font-family:JetBrains Mono,monospace;color:var(--green)">₺0,00</div>
+            </div>
+          </div>
+          <button class="wp-btn" onclick="openTopluWP()" style="font-size:12px;padding:6px 12px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+            Toplu WP
+          </button>
+          <button onclick="gunlukOzetWP()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#1a4480,#2456a0);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+            Özet WP
+          </button>
+          <button onclick="gunlukPDF()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#7c1d1d,#991b1b);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📄 PDF</button>
+          <button onclick="gunlukDevir()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#7c3d0a,#c2640f);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 Günü Kapat</button>
+          <button onclick="veriDisaAktar()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#14532d,#1a7a3f);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">💾 Yedekle</button>
+          <label style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#1c3a6e,#2456a0);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+            📂 Yükle<input type="file" id="veri-yukle-inp" accept=".json" onchange="veriIceAktar(event)" style="display:none">
+          </label>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th style="width:36px">✓</th><th>Tarih</th><th>Müşteri</th><th>Durum</th><th>Ürün</th><th>Gram</th><th>Tutar</th><th>Ödeme</th><th>Kalan</th><th style="width:60px;text-align:center">🏦</th><th></th></tr></thead>
+          <tbody id="islem-tb"><tr><td colspan="10"><div class="empty"><div class="empty-icon">⚖️</div>Henüz işlem girilmedi</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SİPARİŞLER -->
+  <div id="tab-siparis" style="display:none">
+
+    <!-- İstatistik -->
+    <div class="stats4">
+      <div class="sc"><div class="sc-lbl">Toplam</div><div class="sc-val" id="s-top">0</div></div>
+      <div class="sc"><div class="sc-lbl">Alındı</div><div class="sc-val" style="color:var(--gold)" id="s-alindi">0</div></div>
+      <div class="sc"><div class="sc-lbl">Atölyede</div><div class="sc-val" style="color:var(--blue)" id="s-atolye">0</div></div>
+      <div class="sc"><div class="sc-lbl">Teslim</div><div class="sc-val" style="color:var(--green)" id="s-teslim">0</div></div>
+    </div>
+
+    <!-- Sipariş tipi alt sekmeleri -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;box-shadow:var(--shadow-xs)">
+        <button class="tab active" id="sip-tab-tumu" onclick="sipTabSec('tumu')" style="padding:6px 16px;font-size:12px">📋 Tümü</button>
+        <button class="tab" id="sip-tab-bilezik" onclick="sipTabSec('bilezik')" style="padding:6px 16px;font-size:12px">💍 Bilezik</button>
+        <button class="tab" id="sip-tab-diger" onclick="sipTabSec('diger')" style="padding:6px 16px;font-size:12px">📦 Diğer</button>
+      </div>
+      <button class="btn btn-p" onclick="sipModalAc('bilezik')" style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:15px">💍</span> Bilezik Siparişi Ekle
+      </button>
+      <button class="btn btn-g" onclick="sipModalAc('diger')" style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:15px">📦</span> Diğer Sipariş Ekle
+      </button>
+    </div>
+
+    <div id="siparis-list"><div class="empty"><div class="empty-icon">📋</div>Henüz sipariş yok</div></div>
+  </div>
+  <!-- BANKA HAREKETLERİ -->
+  <div id="tab-banka" style="display:none">
+
+    <!-- Gün seçici + özet -->
+    <div class="card" style="padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:180px">
+          <span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap">📅 TARİH</span>
+          <input type="date" id="bh-tarih-filtre" oninput="renderBankaHareketleri()"
+            style="padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:JetBrains Mono,monospace;font-size:13px;color:var(--text);background:var(--surface2);outline:none">
+          <button onclick="bhBugune()" style="padding:6px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--text2)">Bugün</button>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="text-align:right">
+            <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Net Bakiye</div>
+            <div id="bh-toplam" style="font-size:18px;font-weight:700;font-family:JetBrains Mono,monospace;color:var(--green)">₺0,00</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Onaylanan</div>
+            <div id="bh-onaylanan" style="font-size:18px;font-weight:700;font-family:JetBrains Mono,monospace;color:var(--blue)">₺0,00</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Giriş / Çıkış</div>
+            <div id="bh-bekleyen" style="font-size:13px;font-weight:700;font-family:JetBrains Mono,monospace;color:var(--text2)">—</div>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button onclick="bankaHareketleriWP()" class="wp-btn" style="font-size:12px;padding:7px 13px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.608L0 24l6.545-1.349A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-5.031-1.385l-.36-.214-3.733.769.794-3.617-.235-.372A9.772 9.772 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182c5.418 0 9.818 4.398 9.818 9.818 0 5.418-4.4 9.818-9.818 9.818z"/></svg>
+              Toplu WP Gönder
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manuel hareket ekle -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec-hd">Yeni Hareket Ekle</div>
+
+      <!-- GİRİŞ / ÇIKIŞ seçimi -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button type="button" id="bh-yon-giris" onclick="bhYonSec('giris')"
+          style="flex:1;padding:10px;border:2px solid var(--green);border-radius:var(--radius-sm);background:var(--green-light);cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--green);transition:all .15s">
+          📥 GİRİŞ<br><span style="font-size:10px;font-weight:400">Para sana geldi</span>
+        </button>
+        <button type="button" id="bh-yon-cikis" onclick="bhYonSec('cikis')"
+          style="flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text3);transition:all .15s">
+          📤 ÇIKIŞ<br><span style="font-size:10px;font-weight:400">Sen para ödedin</span>
+        </button>
+      </div>
+
+      <div class="grid4" style="margin-bottom:10px">
+        <div class="fg">
+          <label>Tutar (₺)</label>
+          <input type="number" id="bh-tutar" placeholder="0.00" step="0.01" min="0"
+            style="padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;background:var(--surface2);color:var(--text)">
+        </div>
+        <div class="fg">
+          <label>Gönderen / Alıcı</label>
+          <input type="text" id="bh-kimden" placeholder="Müşteri adı veya kaynak..." list="m-dl"
+            style="padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;background:var(--surface2);color:var(--text)">
+        </div>
+        <div class="fg">
+          <label>Banka / Hesap</label>
+          <input type="text" id="bh-banka" placeholder="Ziraat, Kuveyt Türk..." list="bh-banka-dl"
+            style="padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;background:var(--surface2);color:var(--text)">
+          <datalist id="bh-banka-dl"></datalist>
+        </div>
+        <div class="fg">
+          <label>Tarih</label>
+          <input type="date" id="bh-tarih-ekle"
+            style="padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;background:var(--surface2);color:var(--text)">
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <label>Açıklama / Not</label>
+        <input type="text" id="bh-aciklama" placeholder="Opsiyonel..."
+          style="padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;background:var(--surface2);color:var(--text)">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="addBankaHareket()">+ Hareket Ekle</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;margin-left:8px">
+          <input type="checkbox" id="bh-onay-ekle" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer">
+          Eklerken onaylandı işaretle
+        </label>
+      </div>
+    </div>
+
+    <!-- Hareket listesi -->
+    <div class="tbl-wrap">
+      <table id="bh-table">
+        <thead>
+          <tr>
+            <th style="width:60px">SAAT</th>
+            <th style="width:80px">YÖN</th>
+            <th>GÖNDEREN / ALICI</th>
+            <th>BANKA</th>
+            <th>AÇIKLAMA</th>
+            <th style="text-align:right;width:130px">TUTAR</th>
+            <th style="width:70px;text-align:center">ONAY</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="bh-tb">
+          <tr><td colspan="7"><div class="empty"><div class="empty-icon">🏦</div>Bu güne ait hareket yok</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GEÇMİŞ İŞLEMLER -->
+  <div id="tab-gecmis" style="display:none">
+    <div class="card" style="margin-bottom:16px;padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="sec-hd" style="margin:0">📅 Geçmiş İşlemler</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="text" id="gecmis-ara" placeholder="Müşteri adı veya ürün ara..." oninput="renderGecmisIslemler()"
+            style="padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;font-family:var(--font-body);font-size:13px;width:240px;background:var(--surface2);color:var(--text);outline:none">
+          <select id="gecmis-tarih-filtre" onchange="renderGecmisIslemler()"
+            style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface2);color:var(--text);outline:none">
+            <option value="">Tüm Günler</option>
+          </select>
+          <button onclick="gecmisTumunuSil()" style="padding:7px 14px;border:1.5px solid var(--red);border-radius:var(--radius-sm);background:var(--red-light);color:var(--red);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer">🗑 Geçmişi Temizle</button>
+        </div>
+      </div>
+      <div id="gecmis-ozet-bar" style="display:flex;gap:14px;flex-wrap:wrap;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:12px"></div>
+      <div id="gecmis-list"><div class="empty"><div class="empty-icon">📅</div>Henüz devredilmiş gün yok</div></div>
+    </div>
+  </div>
+
+  <!-- GÜNLÜK RAPOR -->
+  <div id="tab-rapor" style="display:none">
+    <div class="card">
+      <!-- Üst bar -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Tarih</div>
+          <input type="date" id="rapor-tarih" onchange="renderGunlukRapor()"
+            style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-mono);background:var(--surface2);color:var(--text);outline:none">
+        </div>
+        <button onclick="raporTarihBugune()" class="btn" style="font-size:12px;padding:7px 13px;align-self:flex-end">📅 Bugün</button>
+        <button onclick="raporWP()" class="wp-btn" style="font-size:12px;padding:7px 13px;align-self:flex-end">📤 WP Gönder</button>
+        <div id="rapor-islem-cnt" style="margin-left:auto;align-self:flex-end;font-size:12px;color:var(--text3);font-weight:600"></div>
+      </div>
+
+      <!-- Nakit & Havale özet kartları -->
+      <div id="rapor-kasa-bar" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px"></div>
+
+      <!-- Durum bazlı tablo -->
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">İşlem Türü Detayı</div>
+      <div id="rapor-durum-tablo" style="margin-bottom:20px"></div>
+
+      <!-- Gram özeti -->
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Gram Özeti</div>
+      <div id="rapor-gram-bar" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px"></div>
+
+      <!-- Kalan / Bekleyenler -->
+      <div id="rapor-kalan-wrap"></div>
+
+      <!-- Boş durum -->
+      <div id="rapor-bos" style="display:none"><div class="empty"><div class="empty-icon">📊</div>Bu güne ait işlem yok</div></div>
+    </div>
+  </div>
+
+  <!-- BORÇ DEFTERİ v2 -->
+  <div id="tab-borc" style="display:none">
+
+    <!-- HEADER: Hesap arama + İşlem tipi + Tarih -->
+    <div style="background:linear-gradient(135deg,#1a1710,#2a2412);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow-md)">
+
+      <!-- Row 1: Hesap + Liste + Yeni Kişi -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(196,154,46,.2);flex-wrap:wrap">
+        <button onclick="bdKisiEkleAc()" style="width:30px;height:30px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(160,120,40,.4)" title="Yeni Kişi Ekle">+</button>
+        <span style="font-size:11px;font-weight:700;color:rgba(232,184,75,.7);letter-spacing:.1em;white-space:nowrap">HESAP :</span>
+        <div style="flex:1;min-width:200px;position:relative">
+          <input type="text" id="bd-hesap-ara" placeholder="Müşteri adı yazın veya seçin..." oninput="bdAramaGuncelle(this.value)" autocomplete="off"
+            style="width:100%;background:rgba(255,255,255,.1);border:1.5px solid rgba(196,154,46,.35);border-radius:6px;padding:7px 12px;font-family:var(--font-body);font-size:14px;font-weight:600;color:#fff;outline:none;transition:border .2s">
+          <div id="bd-ara-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--border2);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);z-index:999;max-height:260px;overflow-y:auto;margin-top:3px"></div>
+        </div>
+        <span id="bd-hesap-no" style="font-size:12px;font-weight:700;color:rgba(232,184,75,.55);font-family:var(--font-mono);min-width:50px;text-align:center;white-space:nowrap">— —</span>
+        <button onclick="bdListeToggle()" style="padding:6px 14px;background:rgba(196,154,46,.18);border:1.5px solid rgba(196,154,46,.45);border-radius:6px;color:#e8b84b;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.04em">📋 LİSTE</button>
+        <button onclick="bdWpOzet()" class="wp-btn" style="font-size:11px;padding:6px 11px">📊 WP Özet</button>
+      </div>
+
+      <!-- Row 2: İşlem tipi + Birim + Tarih + SON DURUM -->
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.38);letter-spacing:.08em;white-space:nowrap">İŞLEM TİPİ :</span>
+        <select id="bd-yeni-tip" style="background:rgba(255,255,255,.09);border:1.5px solid rgba(196,154,46,.3);border-radius:6px;padding:6px 10px;font-family:var(--font-body);font-size:12px;color:#fff;outline:none;cursor:pointer">
+          <option value="" style="background:#222;color:#aaa">— Tip Seçin —</option>
+          <option value="borc" style="background:#222">BORÇ (Senden aldı)</option>
+          <option value="alacak" style="background:#222">ALACAK (Sana verdi)</option>
+        </select>
+        <select id="bd-yeni-birim" style="background:rgba(255,255,255,.09);border:1.5px solid rgba(196,154,46,.3);border-radius:6px;padding:6px 10px;font-family:var(--font-body);font-size:12px;color:#fff;outline:none;cursor:pointer">
+          <option value="TL" style="background:#222">TL — Türk Lirası</option>
+          <option value="HAS" style="background:#222">HAS — Gram (has altın)</option>
+          <option value="BLZ" style="background:#222">BLZ — Bilezik (gram)</option>
+          <option value="CEY" style="background:#222">CEY — Çeyrek Altın</option>
+          <option value="YRM" style="background:#222">YRM — Yarım Altın</option>
+          <option value="TAM" style="background:#222">TAM — Tam / Cumhuriyet</option>
+          <option value="ATA" style="background:#222">ATA — Atatürk Altını</option>
+          <option value="EAT" style="background:#222">EAT — Eski Atatürk</option>
+          <option value="EYA" style="background:#222">EYA — Eski Yarım</option>
+        </select>
+        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.38);letter-spacing:.08em;white-space:nowrap">TARİH :</span>
+        <input type="date" id="bd-yeni-tarih" style="background:rgba(255,255,255,.09);border:1.5px solid rgba(196,154,46,.3);border-radius:6px;padding:6px 10px;font-family:var(--font-mono);font-size:12px;color:#fff;outline:none;color-scheme:dark">
+        <span id="bd-islem-sayac" style="font-size:10px;font-weight:700;color:rgba(232,184,75,.5);font-family:var(--font-mono);padding:4px 10px;background:rgba(255,255,255,.06);border-radius:12px">0 kayıt</span>
+        <button onclick="bdSonDurum()" style="padding:7px 16px;background:linear-gradient(135deg,#2d5a27,#3a7a32);border:1.5px solid #4a9a40;border-radius:6px;color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.04em;box-shadow:0 2px 8px rgba(58,122,50,.3);margin-left:auto">SON DURUM</button>
+      </div>
+    </div>
+
+    <!-- ANA BÖLÜM: İşlem tablosu + Bakiye tablosu -->
+    <div style="display:flex;gap:10px;align-items:flex-start">
+
+      <!-- SOL: İşlem listesi tablosu -->
+      <div style="flex:1;min-width:0">
+        <div class="tbl-wrap">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:600px;background:var(--surface)">
+            <thead>
+              <tr>
+                <th style="width:60px;text-align:center">TİP</th>
+                <th style="width:88px">TARİH</th>
+                <th style="width:50px;text-align:center">BİRİM</th>
+                <th style="width:110px;text-align:right">KUR / B.FİYAT</th>
+                <th style="width:100px;text-align:right">MİKTAR</th>
+                <th style="width:100px;text-align:right">TUTAR (HAS)</th>
+                <th>AÇIKLAMA</th>
+                <th style="width:62px"></th>
+              </tr>
+            </thead>
+            <tbody id="bd-islem-tb">
+              <tr><td colspan="8"><div class="empty"><div class="empty-icon">📒</div>Yukarıdan müşteri seçin</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Ekleme formu (müşteri seçilince görünür) -->
+        <div id="bd-ekle-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-top:2px dashed var(--border2);padding:12px 14px;border-radius:0 0 var(--radius) var(--radius)">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">+ Yeni Kayıt Ekle</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fg" style="min-width:120px;flex:1.5;margin:0">
+              <label>Miktar</label>
+              <input type="number" id="bd-ekle-miktar" placeholder="0.00" step="0.001" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-mono);width:100%;color:var(--text);background:var(--surface2);outline:none">
+            </div>
+            <div class="fg" style="min-width:130px;flex:1.5;margin:0">
+              <label>Kur <span style="font-weight:400;color:var(--text3)">(boş = otomatik)</span></label>
+              <input type="number" id="bd-ekle-kur" placeholder="otomatik..." step="0.001" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-mono);width:100%;color:var(--text);background:var(--surface2);outline:none">
+            </div>
+            <div class="fg" style="flex:3;min-width:180px;margin:0">
+              <label>Açıklama</label>
+              <input type="text" id="bd-ekle-aciklama" placeholder="Opsiyonel..." style="padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;width:100%;color:var(--text);background:var(--surface2);outline:none">
+            </div>
+            <button onclick="bdIslemEkle()" class="btn btn-p" style="padding:9px 22px;white-space:nowrap;align-self:flex-end">+ Ekle</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAĞ: Bakiye tablosu (BORÇ / ALACAK) -->
+      <div style="width:235px;flex-shrink:0">
+        <div style="border:1.5px solid var(--border2);border-radius:var(--radius);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)">
+          <!-- Başlık -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:linear-gradient(135deg,#18150a,#2a2412)">
+            <div style="padding:8px 10px;font-size:10px;font-weight:700;color:rgba(232,184,75,.55);text-transform:uppercase;letter-spacing:.06em"></div>
+            <div style="padding:8px 10px;font-size:10px;font-weight:800;color:#e74c3c;text-transform:uppercase;letter-spacing:.07em;text-align:right">BORÇ</div>
+            <div style="padding:8px 10px;font-size:10px;font-weight:800;color:#2ecc71;text-transform:uppercase;letter-spacing:.07em;text-align:right">ALACAK</div>
+          </div>
+          <!-- Satırlar buraya gelecek -->
+          <div id="bd-bakiye-satirlar" style="min-height:40px"></div>
+          <!-- HAS Toplam -->
+          <div id="bd-has-toplam" style="padding:10px 12px;background:var(--surface2);border-top:2px solid var(--border2);text-align:right;font-family:var(--font-mono);font-size:16px;font-weight:800;color:var(--text3)">— HAS</div>
+        </div>
+
+        <!-- Aksiyon butonları (müşteri seçilince görünür) -->
+        <div id="bd-kisi-btns" style="display:none;margin-top:8px;flex-direction:column;gap:6px">
+          <button onclick="bdWpSecili()" class="wp-btn" style="font-size:12px;width:100%;justify-content:center;padding:8px">📤 WP Gönder</button>
+          <button onclick="bdKisiDuzenleAcSecili()" style="width:100%;padding:8px;border:1.5px solid var(--gold-mid);border-radius:var(--radius-sm);background:var(--gold-light);color:var(--gold-dark);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer">✏️ Kişiyi Düzenle</button>
+          <button onclick="bdKisiSilSecili()" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text3);font-family:var(--font-body);font-size:12px;cursor:pointer">🗑 Kişiyi Sil</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LİSTE PANELİ (Toggle) -->
+    <div id="bd-liste-panel" style="display:none;margin-top:12px">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div class="sec-hd" style="margin:0">📒 Tüm Hesaplar (<span id="bd-liste-sayi">0</span>)</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="bd-liste-ara" placeholder="🔍 İsim ara..." oninput="bdListeRender()"
+              style="padding:7px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;width:200px;background:var(--surface2);color:var(--text);outline:none">
+            <button onclick="bdListeToggle()" style="padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2)">✕ Kapat</button>
+          </div>
+        </div>
+        <div id="bd-ozet-bar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px"></div>
+        <div id="bd-list"><div class="empty"><div class="empty-icon">📒</div>Henüz kayıt yok</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AYARLAR -->
+  <div id="tab-ayarlar" style="display:none">
+
+    <!-- OTOMATİK YEDEK -->
+    <div class="card" style="border:1.5px solid var(--green);background:var(--green-light)">
+      <div class="sec-hd" style="color:var(--green)">🛡️ Otomatik Yedekler</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Her kayıtta son <b>10 yedek</b> otomatik saklanır. Veri kaybında buradan geri yükleyebilirsin.</p>
+      <div id="oto-yedek-list" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="veriDisaAktar()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:linear-gradient(135deg,#14532d,#1a7a3f);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer">💾 JSON Yedek Al</button>
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--blue);color:#fff;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer">
+          📂 JSON Yükle <input type="file" accept=".json" onchange="veriIceAktar(event)" style="display:none">
+        </label>
+        <button onclick="localStorageTara()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer">🔍 Kayıp Veri Ara</button>
+      </div>
+      <div id="kurtarma-panel" style="display:none;margin-top:14px;border-top:1px dashed var(--border2);padding-top:14px"></div>
+    </div>
+    <div class="card">
+      <div class="sec-hd">Özel Hızlı Tuşlar</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Buraya eklediğin tuşlar Satış &amp; Alış formundaki tuş sırasına eklenir. Tıklanınca direkt tutar popup'ı açılır.</p>
+      <div id="ozel-tus-list" style="margin-bottom:12px"></div>
+      <div style="border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:14px;background:var(--surface2)">
+        <div class="sec-hd" style="margin-bottom:10px">Yeni Tuş Ekle</div>
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="fg"><label>Ürün Adı</label><input type="text" id="ot-ad" placeholder="Bilezik İşçiliksiz, Küpe..."></div>
+          <div class="fg"><label>Ölçüm Türü</label>
+            <select id="ot-tip">
+              <option value="gram">Gram (yüzük, kolye, bilezik...)</option>
+              <option value="adet">Adet (altın, sikke...)</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-p" onclick="addOzelTus()">+ Tuş Ekle</button>
+      </div>
+    </div>
+
+    <!-- BANKA YÖNETİMİ -->
+    <div class="card" style="margin-top:0">
+      <div class="sec-hd">Banka Kısayolları</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Kısayol yazınca banka adını otomatik tamamlar. Örnek: <b>kv → Kuveyt Türk</b>, <b>zr → Ziraat</b>. Telefon numarası varsa WP butonu çıkar.</p>
+      <div id="banka-list" style="margin-bottom:12px"></div>
+      <div style="border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:14px;background:var(--surface2)">
+        <div class="sec-hd" style="margin-bottom:10px">Yeni Banka Ekle</div>
+        <div class="grid3" style="margin-bottom:10px">
+          <div class="fg"><label>Kısayol <span style="font-weight:400;color:var(--text3)">(kv, zr, ak...)</span></label><input type="text" id="banka-kisayol" placeholder="kv" style="text-transform:lowercase" maxlength="6"></div>
+          <div class="fg"><label>Banka Adı</label><input type="text" id="banka-ad" placeholder="Kuveyt Türk"></div>
+          <div class="fg"><label>WP Telefon <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label><input type="text" id="banka-tel" placeholder="905XXXXXXXXX"></div>
+        </div>
+        <button class="btn btn-p" onclick="addBanka()">+ Banka Ekle</button>
+      </div>
+    </div>
+
+    <!-- ATÖLYELER & KENDİ NUMARASI -->
+    <div class="card" style="margin-top:0">
+      <div class="sec-hd">WP Telefon Numaraları</div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="fg">
+          <label>Kendi Numaram <span style="font-weight:400;color:var(--text3)">(İşlem detayı kendime gönder)</span></label>
+          <input type="text" id="kendi-tel" placeholder="905XXXXXXXXX" oninput="saveKendiTel()">
+          <span style="font-size:10px;color:var(--text3)">Ülke koduyla yaz: 905551234567</span>
+        </div>
+        <div class="fg">
+          <label>📊 Günlük Grup <span style="font-weight:400;color:var(--text3)">(opsiyonel)</span></label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+            <button id="grup-auto-btn" onclick="toggleGrupAuto()"
+              style="padding:8px 18px;border-radius:20px;border:2px solid var(--border);background:var(--surface2);color:var(--text3);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s">
+              ⬛ Kapalı
+            </button>
+            <span style="font-size:11px;color:var(--text3)" id="grup-auto-aciklama">Kapalı — işlemler otomatik gönderilmez</span>
+          </div>
+          <span style="font-size:10px;color:var(--text3);margin-top:4px;display:block">Açıkken: her kayıtta mesaj panoya kopyalanır + WhatsApp açılır, sen grubu seçersin</span>
+        </div>
+      </div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="fg">
+          <label>👥 İşlem Grup Numarası <span style="font-weight:400;color:var(--text3)">(her işlemi gruba gönder)</span></label>
+          <input type="text" id="islem-grup-tel" placeholder="905XXXXXXXXX" oninput="saveIslemGrup()">
+          <span style="font-size:10px;color:var(--text3)">Dolu olursa işlem satırında "Gruba WP" butonu çıkar</span>
+        </div>
+      </div>
+      <div class="sec-hd">Atölyeler</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Birden fazla atölye ekleyebilirsin. Sipariş gönderirken hangisine yollayacağını seçersin.</p>
+      <div id="atolye-list" style="margin-bottom:12px"></div>
+      <div style="border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:14px;background:var(--surface2)">
+        <div class="sec-hd" style="margin-bottom:10px">Yeni Atölye Ekle</div>
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="fg"><label>Atölye Adı</label><input type="text" id="atolye-ad" placeholder="Usta Ahmet, Atölye 1..."></div>
+          <div class="fg"><label>WP Telefonu</label><input type="text" id="atolye-tel-yeni" placeholder="905XXXXXXXXX"><span style="font-size:10px;color:var(--text3)">Ülke koduyla yaz</span></div>
+        </div>
+        <button class="btn btn-p" onclick="addAtolye()">+ Atölye Ekle</button>
+      </div>
+    </div>
+  </div><!-- /tab-ayarlar -->
+
+  <!-- BAĞLANTI SEKMESİ -->
+  <div id="tab-baglanti" style="display:none">
+
+    <!-- Atölye Seçici + Ekle -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec-hd">Atölyeler</div>
+      <!-- Atölye Ekle -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input type="text" id="bag-atolye-isim" placeholder="Atölye adı yazın (ör: Alp Atölyesi)..."
+          style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface2);color:var(--text);outline:none"
+          onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')bagAtolye_Ekle()">
+        <button class="btn btn-p" onclick="bagAtolye_Ekle()" style="padding:10px 20px;font-size:13px;white-space:nowrap">+ Atölye Ekle</button>
+      </div>
+      <!-- Atölye Tabları -->
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap" id="bag-atolye-tabs">
+        <span style="font-size:12px;color:var(--text3)">Henüz atölye eklenmedi</span>
+      </div>
+    </div>
+
+    <!-- Seçili atölye içeriği -->
+    <div id="bag-atolye-panel" style="display:none">
+
+      <!-- Cari Bakiye -->
+      <div id="bag-cari-wrap" style="margin-bottom:16px"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- YENİ BAĞLANTI FORMU -->
+        <div class="card">
+          <div class="sec-hd">Yeni Bağlantı</div>
+
+          <!-- Mal Türü Tuşları -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Mal Türü</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px" id="bag-mal-tuslar">
+              <!-- JS ile doldurulur -->
+            </div>
+            <input type="hidden" id="bag-mal-tip" value="">
+            <input type="hidden" id="bag-mal-birim" value="">
+          </div>
+
+          <!-- Miktar + Fiyat + Toplam -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div class="fg">
+              <label id="bag-miktar-lbl">Miktar</label>
+              <input type="number" id="bag-miktar" placeholder="0" step="0.001" min="0"
+                oninput="bagHesapla()"
+                style="padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:14px;font-weight:600;background:var(--surface2);color:var(--text);outline:none"
+                onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div class="fg">
+              <label id="bag-fiyat-lbl">Birim Fiyat (₺)</label>
+              <input type="number" id="bag-fiyat" placeholder="0.00" step="0.01" min="0"
+                oninput="bagHesapla()"
+                style="padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:14px;font-weight:600;background:var(--surface2);color:var(--text);outline:none"
+                onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+          </div>
+
+          <!-- Toplam TL göstergesi -->
+          <div id="bag-toplam-box" style="display:none;background:linear-gradient(135deg,#1c1a10,#2a2412);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;font-weight:600;color:rgba(232,184,75,.6);text-transform:uppercase;letter-spacing:.08em">Toplam Değer</span>
+            <span id="bag-toplam-txt" style="font-family:var(--font-mono);font-size:18px;font-weight:800;color:#e8c97a">—</span>
+          </div>
+
+          <!-- Tarih + Not -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <div class="fg">
+              <label>Tarih</label>
+              <input type="date" id="bag-tarih"
+                style="padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface2);color:var(--text);outline:none"
+                onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div class="fg">
+              <label>Not</label>
+              <input type="text" id="bag-not" placeholder="Opsiyonel..."
+                style="padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;background:var(--surface2);color:var(--text);outline:none"
+                onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+          </div>
+
+          <!-- Ben verdim / Atölye verdi -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            <button type="button" id="bag-yon-ben" onclick="bagYonSec('ben')"
+              style="padding:11px;border:1.5px solid var(--gold-mid);border-radius:var(--radius-sm);background:linear-gradient(135deg,#1c1a10,#2a2412);color:#e8c97a;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;line-height:1.4;text-align:center">
+              📤 Ben Verdim<br><span style="font-size:10px;opacity:.7">Ben mal verdim, atölye TL alacaklı</span>
+            </button>
+            <button type="button" id="bag-yon-atolye" onclick="bagYonSec('atolye')"
+              style="padding:11px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);background:#fff;color:var(--text2);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;line-height:1.4;text-align:center">
+              📥 Atölye Verdi<br><span style="font-size:10px;opacity:.7">Atölye mal verdi, ben TL alacaklı</span>
+            </button>
+          </div>
+
+          <button class="btn btn-p" onclick="bagKaydet()" style="width:100%;font-size:13px;padding:12px">+ Bağlantı Kaydet</button>
+        </div>
+
+        <!-- HESAP ÖZET -->
+        <div class="card">
+          <div class="sec-hd">Hesap Durumu — <span id="bag-secili-isim" style="color:var(--gold-dark)"></span></div>
+          <div id="bag-hesap-ozet"></div>
+        </div>
+      </div>
+
+      <!-- Kayıt Geçmişi -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="sec-hd" style="margin:0">Bağlantı Geçmişi</div>
+          <select id="bag-filtre-mal" onchange="bagRenderKayitlar()"
+            style="padding:7px 11px;border:1.5px solid var(--border);border-radius:20px;font-family:var(--font-body);font-size:12px;background:#fff;color:var(--text);outline:none;cursor:pointer">
+            <option value="">Tüm Türler</option>
+          </select>
+        </div>
+        <div id="bag-kayit-list"></div>
+      </div>
+
+    </div>
+
+    <div id="bag-bos-mesaj" style="text-align:center;padding:60px 20px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px">🔗</div>
+      <div style="font-size:14px;font-weight:600">Önce bir atölye ekleyin</div>
+      <div style="font-size:12px;margin-top:6px">Atölye adını yazıp + Ekle'ye tıklayın</div>
+    </div>
+
+  </div>
+
+</div><!-- /app-body -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
